@@ -76,6 +76,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.ui.layout.ContentScale
 import java.io.File
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -125,10 +127,10 @@ fun PantallaCamara(context: Context) {
                         .align(Alignment.TopStart)
                         .padding(12.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
+                    Image(
+                        painter = painterResource(id = R.drawable.swap),
                         contentDescription = "Cambiar cámara",
-                        tint = Color.White
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 IconButton(
@@ -154,10 +156,10 @@ fun PantallaCamara(context: Context) {
                         .padding(bottom = 16.dp)
                         .size(56.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Face,
+                    Image(
+                        painter = painterResource(id = R.drawable.snap),
                         contentDescription = "Tomar foto",
-                        tint = Color.White
+                        modifier = Modifier.size(36.dp)
                     )
                 }
             }
@@ -178,10 +180,10 @@ fun PantallaCamara(context: Context) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Face,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp)
+                    Image(
+                        painter = painterResource(id = R.drawable.camera),
+                        contentDescription = "cámara",
+                        modifier = Modifier.size(38.dp)
                     )
                     Text(
                         "No tienes fotos, toma una!",
