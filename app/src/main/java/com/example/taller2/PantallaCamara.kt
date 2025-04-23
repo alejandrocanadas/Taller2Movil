@@ -75,8 +75,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.ui.layout.ContentScale
 import java.io.File
-
-
+import androidx.compose.ui.draw.clip
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -88,106 +87,132 @@ fun PantallaCamara(context: Context) {
         CameraSelector.DEFAULT_FRONT_CAMERA
     else
         CameraSelector.DEFAULT_BACK_CAMERA
+
     LaunchedEffect(Unit) {
+        borrarFotos(context)
         fotos = cargarFotos(context)
     }
     Column(
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
+        // Vista de la cámara (30% del espacio)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.3f),
+                .weight(0.3f)
+                .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
-            Preview(
-                cameraSelector = cameraSelector,
-                onImageCaptureReady = { captura = it },
-                modifier = Modifier.fillMaxWidth()
-            )
-            IconButton(
-                onClick = { camaraFrontal = !camaraFrontal },
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(12.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Cambiar cámara",
-                    tint = Color.White
-                )
-            }
-            IconButton(
-                onClick = {
-                    val archivo = File(context.filesDir, "foto_${System.currentTimeMillis()}.jpg")
-                    val output = ImageCapture.OutputFileOptions.Builder(archivo).build()
-                    captura?.takePicture(
-                        output,
-                        ContextCompat.getMainExecutor(context),
-                        object : ImageCapture.OnImageSavedCallback {
-                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                                Toast.makeText(context, "Foto tomada", Toast.LENGTH_SHORT).show()
-                                fotos = cargarFotos(context)
-                            }
-                            override fun onError(exception: ImageCaptureException) {
-                                Toast.makeText(context, "Error al tomar foto", Toast.LENGTH_SHORT).show()
-                            }
-                        }
+                    .fillMaxSize()
+                    .background(
+                        color = Color.DarkGray,
+                        shape = MaterialTheme.shapes.large
                     )
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .size(56.dp)
+                    .clip(MaterialTheme.shapes.large)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Face,
-                    contentDescription = "Tomar foto",
-                    tint = Color.White
+                Preview(
+                    cameraSelector = cameraSelector,
+                    onImageCaptureReady = { captura = it },
+                    modifier = Modifier
+                        .fillMaxSize()
                 )
+                IconButton(
+                    onClick = { camaraFrontal = !camaraFrontal },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Cambiar cámara",
+                        tint = Color.White
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        val archivo = File(context.filesDir, "foto_${System.currentTimeMillis()}.jpg")
+                        val output = ImageCapture.OutputFileOptions.Builder(archivo).build()
+                        captura?.takePicture(
+                            output,
+                            ContextCompat.getMainExecutor(context),
+                            object : ImageCapture.OnImageSavedCallback {
+                                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                    Toast.makeText(context, "Foto tomada", Toast.LENGTH_SHORT).show()
+                                    fotos = cargarFotos(context)
+                                }
+                                override fun onError(exception: ImageCaptureException) {
+                                    Toast.makeText(context, "Error al tomar foto", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        )
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 16.dp)
+                        .size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Face,
+                        contentDescription = "Tomar foto",
+                        tint = Color.White
+                    )
+                }
             }
         }
-        if (fotos.isEmpty()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(0.7f)
-                    .padding(top = 60.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Face,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp)
-                )
-                Text("No tienes fotos, toma una!")
-            }
-        } else {
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(3),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(0.7f)
-            ) {
-                items(fotos) { foto ->
-                    val bitmap = CargarImagen(foto)
-                    bitmap?.let {
-                        androidx.compose.foundation.Image(
-                            bitmap = it,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .fillMaxWidth()
-                                .height(120.dp)
-                        )
+
+        // Galería de fotos (70% del espacio)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.7f)
+                .background(Color.White)
+        ) {
+            if (fotos.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Face,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        "No tienes fotos, toma una!",
+                        color = Color.Black
+                    )
+                }
+            } else {
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(3),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(fotos) { foto ->
+                        val bitmap = CargarImagen(foto)
+                        bitmap?.let {
+                            androidx.compose.foundation.Image(
+                                bitmap = it,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .fillMaxWidth()
+                                    .height(120.dp)
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 fun cargarFotos(context: Context): List<File> {
     return context.filesDir.listFiles()
@@ -209,28 +234,63 @@ fun CargarImagen(file: File): ImageBitmap? {
 fun Preview(cameraSelector: CameraSelector, onImageCaptureReady: (ImageCapture) -> Unit, modifier: Modifier) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    AndroidView(
-        factory = { ctx ->
-            val previewView = PreviewView(ctx)
-            val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
-            cameraProviderFuture.addListener(
-                {
-                    val cameraProvider = cameraProviderFuture.get()
+    var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
+
+    Box(
+        modifier = modifier.then(
+            Modifier
+                .fillMaxWidth()
+                .background(
+                    color = Color.Transparent,
+                    shape = MaterialTheme.shapes.large
+                )
+        )
+    ) {
+        AndroidView(
+            factory = { ctx ->
+                val previewView = PreviewView(ctx).apply {
+                    this.scaleType = PreviewView.ScaleType.FILL_CENTER
+                }
+                val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
+                cameraProviderFuture.addListener(
+                    {
+                        val provider = cameraProviderFuture.get()
+                        cameraProvider = provider
+                        val preview = Preview.Builder().build().also {
+                            it.setSurfaceProvider(previewView.surfaceProvider)
+                        }
+                        val imageCapture = ImageCapture.Builder().build()
+                        onImageCaptureReady(imageCapture)
+                        provider.unbindAll()
+                        provider.bindToLifecycle(
+                            lifecycleOwner, cameraSelector, preview, imageCapture
+                        )
+                    },
+                    ContextCompat.getMainExecutor(ctx)
+                )
+                previewView
+            },
+            modifier = Modifier.fillMaxSize(),
+            update = { previewView ->
+                cameraProvider?.let { provider ->
+                    provider.unbindAll()
                     val preview = Preview.Builder().build().also {
                         it.setSurfaceProvider(previewView.surfaceProvider)
                     }
                     val imageCapture = ImageCapture.Builder().build()
                     onImageCaptureReady(imageCapture)
-                    cameraProvider.unbindAll()
-                    cameraProvider.bindToLifecycle(
+                    provider.bindToLifecycle(
                         lifecycleOwner, cameraSelector, preview, imageCapture
                     )
-                },
-                ContextCompat.getMainExecutor(ctx)
-            )
-            previewView
-        },
-        modifier = modifier
-    )
+                }
+            }
+        )
+    }
+}
+
+fun borrarFotos(context: Context) {
+    context.filesDir.listFiles()
+        ?.filter { it.extension == "jpg" }
+        ?.forEach { it.delete() }
 }
 
